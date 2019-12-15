@@ -24,6 +24,8 @@ public class Manager implements MouseListener, KeyListener{
 	private int passCount=0;
 	private boolean yourTurn = false;
 	private boolean gameStarted =false;
+	private boolean isBot = false;
+	GoBot goBot;
 	
 	BufferedReader in;
     PrintWriter out;
@@ -31,8 +33,9 @@ public class Manager implements MouseListener, KeyListener{
     
 	Scanner myObj = new Scanner(System.in);
 	
-	public Manager() throws Exception {
+	public Manager(int size) throws Exception {
 		
+		this.size = size;
 		board = new Board(size);
 		playSpace = new PlaySpace();
 		pieces = board.getBoard();
@@ -41,14 +44,15 @@ public class Manager implements MouseListener, KeyListener{
 		playSpace.addMouseListener(this);	
 		playSpace.get_keyListener(this);
 		
+		goBot = new GoBot(pieces,size+2);
+		
 		runMove();
 	}
 	
 	public void run(int x, int y) {	
 	
-		if(yourTurn)
-		if(gameStarted)
-		if(board.makeMove(x+1,y+1,turn)) {	
+		if(gameStarted && yourTurn && !isBot)
+		if(board.makeMove(x,y,turn)) {	
 			yourTurn=false;
 			out.println("NEXT_TURN" + turn + "" + x + ":" + y);
 		}
@@ -59,16 +63,17 @@ public class Manager implements MouseListener, KeyListener{
 	public void keyPressed(KeyEvent e) {
 		
 		if(gameStarted) {
-			if(yourTurn) {
-				if(e.getKeyCode() == 83) {
-					out.println("PASSED" + turn);
-					yourTurn = false;	
-				}	
+			if(yourTurn) 
+			if(e.getKeyCode() == 83) {
+				out.println("PASSED" + turn);
+				yourTurn = false;	
+			}	
 				
-				if(e.getKeyCode() == 66) {
-					//TO:DO turnBotOn();
-				}
+			if(e.getKeyCode() == 66) {
+				isBot = !isBot;
+				if(isBot && yourTurn) makeBotMove();
 			}
+
 			
 			if(e.getKeyCode() == 81) {
 				out.println("FORFIT" + turn);
@@ -84,7 +89,7 @@ public class Manager implements MouseListener, KeyListener{
 		int x = (int) Math.floor((Px - 20)*size/PlaySpace.boardSize);
 		int y = (int) Math.floor((Py - 20)*size/PlaySpace.boardSize);
 		
-		run(x,y);
+		run(x+1,y+1);
 		
 	}
 	
@@ -113,7 +118,8 @@ public class Manager implements MouseListener, KeyListener{
         		gameStarted = true;
         		if(turn==1) {
         			yourTurn=true;
-        			JOptionPane.showMessageDialog(null,"Zaczynasz!");
+        			//JOptionPane.showMessageDialog(null,"Zaczynasz!");
+        			System.out.println("Zaczynasz!");
         		}	
         	}
         	
@@ -128,17 +134,26 @@ public class Manager implements MouseListener, KeyListener{
 	        			playSpace.repaint();
 	        			gameStarted = false;
 	        		}
+	        		
+	        		if(yourTurn && isBot) {
+	        			Pass();
+	        		}
+	        		
+	        		
 	        	}
 	        	
 	        	if(line.startsWith("FORFIT")) {
 	        		gameStarted = false;
 	        		
 	        		if(line.charAt(6)-48 != turn) {
-	        			JOptionPane.showMessageDialog(null,"Your opponent surrendered!");
+	        			//JOptionPane.showMessageDialog(null,"Your opponent surrendered!");
+	        			System.out.println("Your opponent surrendered!");
 	        		}
 	        	}
 				
 	        	if(line.startsWith("NEXT_TURN")) {
+	        		
+	        		passCount=0;
 	        		
 	        		int opT = line.charAt(9)-48;
 	        		
@@ -148,17 +163,62 @@ public class Manager implements MouseListener, KeyListener{
 		        		int opX = Integer.parseInt(parts[0]);
 		        		int opY = Integer.parseInt(parts[1]);
 		        		
-		        		board.makeMove(opX+1,opY+1,opT);
+		        		board.makeMove(opX,opY,opT);
 		        		yourTurn = true;
 		        		playSpace.repaint();
-		        		passCount=0;
+		        		
+		        		if(isBot == true) makeBotMove();
 	        		}
+	        		
 	        	}
         	}
   
 		}		
 	}
 	
+	private void makeBotMove() {
+		
+
+		goBot.FindPos(turn);
+		int x = goBot.getX();
+		int y = goBot.getY();
+		
+		if(board.makeMove(x,y,turn)) {
+			yourTurn=false;
+			out.println("NEXT_TURN" + turn + "" + x + ":" + y);	
+			playSpace.repaint();
+		}
+		else {
+			boolean stop=false;;
+				
+			for(int i=1; i<size+1; i++) {
+				if(stop) break;
+				for(int j=1; j<size+1; j++) {
+					if(pieces[j][i].getState()==0) {
+						if(board.makeMove(j,i,turn)) {
+							yourTurn=false;
+							out.println("NEXT_TURN" + turn + "" + j + ":" + i);	
+							playSpace.repaint();
+							stop=true;
+							break;
+						}	
+					}
+				}
+			}
+			
+			if(!stop) Pass();
+	
+				
+		}
+		
+		
+	}
+	
+	private void Pass() {
+		out.println("PASSED" + turn);
+		yourTurn = false;
+	}
+
 	public void keyTyped(KeyEvent e) {}
 	
 	public void keyReleased(KeyEvent e) {}

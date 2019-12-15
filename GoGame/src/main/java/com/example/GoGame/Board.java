@@ -46,10 +46,6 @@ public class Board {
 		
 		if(pieces[px][py].getState()!=0) return false;
 		if(cdPieceX == px && cdPieceY == py) return false;
-		else {
-			cdPieceX=0;
-			cdPieceY=0;
-		}
 		
 		pieces[px][py].setState(player);
 		if(player == 1) {
@@ -71,6 +67,8 @@ public class Board {
 			}	
 		}		
 		
+		cdPieceX=0;
+		cdPieceY=0;
 		//printChains();
 		return true;
 	}
@@ -238,6 +236,8 @@ public class Board {
 		
 		if(blackPoints>whitePoints) JOptionPane.showMessageDialog(null,"Black has won with "+ blackPoints + " points to " + whitePoints + " points.");
 		else JOptionPane.showMessageDialog(null,"White has won with "+ whitePoints + " points to " + blackPoints + " points.");
+		
+		System.out.println("Someone has won");
 	}
 	
 	public Boolean countNeighbours(int x, int y) {
