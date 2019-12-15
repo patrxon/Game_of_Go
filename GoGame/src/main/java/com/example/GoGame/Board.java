@@ -2,6 +2,8 @@ package com.example.GoGame;
 
 import java.util.ArrayList;
 
+import javax.swing.JOptionPane;
+
 public class Board {
 
 	private int size=11; // 9x9 + 2 warden layers
@@ -11,6 +13,8 @@ public class Board {
 	private ArrayList<Chain> whiteChains = new ArrayList<Chain>();
 	private int blackPoints=0;
 	private int whitePoints=0;
+	private int cdPieceX=0;
+	private int cdPieceY=0;
 	
 	public Board(int size) {
 		this.size = size+2;
@@ -41,7 +45,12 @@ public class Board {
 	public Boolean makeMove(int px, int py, int player) {
 		
 		if(pieces[px][py].getState()!=0) return false;
-			
+		if(cdPieceX == px && cdPieceY == py) return false;
+		else {
+			cdPieceX=0;
+			cdPieceY=0;
+		}
+		
 		pieces[px][py].setState(player);
 		if(player == 1) {
 			setPawn(blackChains, px, py);
@@ -61,8 +70,8 @@ public class Board {
 				return false;
 			}	
 		}		
-						
-		printChains();
+		
+		//printChains();
 		return true;
 	}
 	
@@ -85,8 +94,7 @@ public class Board {
 					
 					for(int k=0; k < chains.get(i).getSize(); k++) {
 						chains.get(chains.size()-1).getChain().add(chains.get(i).getPiece(k));
-					}
-					
+					}				
 					chains.remove(i);
 					i--;
 					break;
@@ -127,6 +135,9 @@ public class Board {
 	
 		int breaths=0;
 		Piece somePiece;
+		int Kox=0;
+		int Koy=0;
+		int isKo=0;
 		
 		for(int i=0; i < chains.size(); i++) {
 			
@@ -139,19 +150,30 @@ public class Board {
 			}
 			
 			if(breaths == 0) {
+				if( chains.get(i).getSize()==1 ) {
+					Kox=chains.get(i).getPiece(0).getX();
+					Koy=chains.get(i).getPiece(0).getY();
+					isKo++;
+				}
+				
 				deleteChain(chains, i);
 				i--;
 			}
 			else breaths = 0;
 		}
 		
+		if(isKo==1) {
+			cdPieceX=Kox;
+			cdPieceY=Koy;
+		}
+		
 	}
 	
 	public void deleteChain(ArrayList<Chain> chains, int n) {
 		
-		if(chains.get(0).getChain().get(0).getState() == 1) whitePoints+=chains.get(n).getSize();
+		if(chains.get(0).getPiece(0).getState() == 1) whitePoints+=chains.get(n).getSize();
 		else blackPoints+=chains.get(n).getSize();
-		
+			
 		for(int i=0; i< chains.get(n).getSize(); i++) {
 			pieces[chains.get(n).getPiece(i).getX()][chains.get(n).getPiece(i).getY()].resetPiece();
 		}
@@ -214,8 +236,8 @@ public class Board {
 			}
 		}
 		
-		if(blackPoints>whitePoints) System.out.println("Black has won with "+ blackPoints + " points to " + whitePoints + " points.");
-		else System.out.println("White has won with "+ whitePoints + " points to " + blackPoints + " points.");
+		if(blackPoints>whitePoints) JOptionPane.showMessageDialog(null,"Black has won with "+ blackPoints + " points to " + whitePoints + " points.");
+		else JOptionPane.showMessageDialog(null,"White has won with "+ whitePoints + " points to " + blackPoints + " points.");
 	}
 	
 	public Boolean countNeighbours(int x, int y) {
