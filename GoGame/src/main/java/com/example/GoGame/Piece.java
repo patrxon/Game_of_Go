@@ -9,7 +9,7 @@ public class Piece {
 	private int neighbourWhite = 0;
 	private int neighbourBlack = 0;
 	
-	Piece(int x, int y, int state) {
+	public Piece(int x, int y, int state) {
 		this.y = y;
 		this.x = x;
 		this.state = state;
@@ -20,11 +20,11 @@ public class Piece {
 		breaths = 4;
 	}
 	
-	int getState() {
+	public int getState() {
 		return state;
 	}
 	
-	void setState(int state) {
+	public void setState(int state) {
 		this.state = state;
 	}
 

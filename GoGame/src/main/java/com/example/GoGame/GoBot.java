@@ -7,12 +7,12 @@ public class GoBot {
 	private int newX=0;
 	private int newY=0;
 	
-	GoBot(Piece[][] pieces, int size) {
+	public GoBot(Piece[][] pieces, int size) {
 		this.pieces = pieces;
 		this.size = size;
 	}
 	
-	void FindPos(int player) {
+	public void FindPos(int player) {
 		
 		if(player == 1) player = 2;
 		else player = 1;
@@ -25,7 +25,8 @@ public class GoBot {
 			}
 		}
 		
-		int putAt = (int) (Math.random() * (positions));
+		int putAt=0;
+		if(positions>0) putAt = (int) (Math.random() * (positions-1))+1;
 		
 		int iter=0;
 		
